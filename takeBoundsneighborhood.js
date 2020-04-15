@@ -1,3 +1,15 @@
+//SCRIPTS NECESSARIOS PARA GERAR A BASE DE DADOS DE JUIZ DE FORA
+//1.O arquivo de bairrosJF.csv contém informações da quantidade de população e qual zona de cada bairro 
+//2.A partir desse arquivo é gerado a estrutura do array de objetos
+//3.Ainda faltava as coordenadas dos limites de cada bairro, portanto foi usado dados do openstreemap
+//4."https://nominatim.openstreetmap.org/search.php?q=" +nomeBairro +"+juiz+de+fora&polygon_geojson=1&format=json" por meio desse link foi
+//possível receber um Json com os limites de cada bairro e assim gerar o poligono correspondente no mapa
+//5.Finalmente, um novo arquivo foi gerado, JSONBounds.txt, com todas as informções necessárias de cada bairro. Inclui:
+//  a) Nome do Bairro
+//  b) População
+//  c) Zona
+//  d) Cordenadas dos limites do bairro
+
 $(function() {
   $.ajax({
     type: "GET",

@@ -1,4 +1,11 @@
-let nGateways = Math.round((quantPontos * 20) / 100);
+//Problema com o bairro de Nossa senhora de Lourdes: o site do openstreemap não referenciava
+//corretamente o limite do bairro, portanto novas coordenadas foram inseridas para corrigir o problema
+let map;
+let finalData=[];
+let points=[];
+let quantPontos;
+let maxDistGatewayToPoint;
+let nGateways;
 let quantGateways = 0;
 let coordGateways = [];
 let coordClients = [];
@@ -8,10 +15,21 @@ function initMap() {
     zoom: 14,
     center: { lat: -21.7642, lng: -43.3496 }
   });
-  boundsNeighborhood();
 }
 
-function boundsNeighborhood() {
+function main() {
+  initMap();
+  google.maps.event.trigger(map, 'resize');
+  quantPontos = document.getElementById("qtnPts").value;
+  maxDistGatewayToPoint = document.getElementById("dist").value;
+  nGateways = Math.round((quantPontos * 20) / 100)
+  finalData=[];
+  points=[];
+  quantGateways = 0;
+  coordGateways = [];
+  coordClients = [];
+  
+  
   $.getJSON("JSONBounds.txt", function(data) {
     finalData = data;
     finalData[69].coordenadas = bugfix(); //Problema com o bairro de Nossa Senhora de lourdes
@@ -49,7 +67,7 @@ function boundsNeighborhood() {
       
     }
 
-    
+    criarArquivoInstancia();
   });
 }
 
@@ -61,8 +79,10 @@ function sumPopZone() {
   let keys;
   finalData.forEach(function(item) {
     keys = Object.keys(zones);
-    if (keys.includes(item.zona)) zones[item.zona] += parseInt(item.populacao);
-    else zones[item.zona] = parseInt(item.populacao);
+    if (keys.includes(item.zona)) 
+      zones[item.zona] += parseInt(item.populacao);
+    else 
+      zones[item.zona] = parseInt(item.populacao);
 
     zones["total"] += parseInt(item.populacao);
   });
@@ -70,8 +90,8 @@ function sumPopZone() {
   return zones;
 }
 
-//Retorna uma zona aleatoria de acordo a desidade demográfica do local,
-//ou seja, uma zona com uma desidade maior será sorteada mais vezes
+//Retorna uma zona aleatoria de acordo a densidade demográfica do local,
+//ou seja, uma zona com uma densidade maior será sorteada mais vezes
 function randomZone(sumZones) {
   let nRandom = Math.floor(Math.random() * (sumZones["total"] - 1 + 1)) + 1;
   let keys = Object.keys(sumZones);
@@ -98,6 +118,7 @@ function bairrosZona(zona) {
 
 //Define um ponto em um bairro escolhido randomicamente
 function gerarPonto(bairros) {
+  
   //Total de todas as zonas
   let totalpop = 0;
   for (let index = 0; index < bairros.length; index++)
@@ -119,6 +140,7 @@ function gerarPonto(bairros) {
   var polygon = new google.maps.Polygon({
     path: bairros[i].coordenadas
   });
+
 
   var point = randomizarLatLong(polygon, minMaxLatLong(bairros[i].coordenadas));
 
@@ -146,7 +168,7 @@ function minMaxLatLong(bounds) {
 
 //Randomiza os valores de lat e lgn até que o mesmo esteja dentro do poligono indicado
 function randomizarLatLong(polygon, minMax) {
-  var point;
+  /*var point;
   var latitude, longitude;
 
   latitude = Math.random() * (minMax.max.lat - minMax.min.lat) + minMax.min.lat;
@@ -160,6 +182,25 @@ function randomizarLatLong(polygon, minMax) {
     longitude =
       Math.random() * (minMax.max.lng - minMax.min.lng) + minMax.min.lng;
     point = new google.maps.LatLng(latitude, longitude);
+  }*/
+  var bounds = new google.maps.LatLngBounds();
+
+  for (var i=0; i < polygon.getPath().getLength(); i++) {
+    bounds.extend(polygon.getPath().getAt(i));
+  }
+
+  var sw = bounds.getSouthWest();
+  var ne = bounds.getNorthEast();
+
+  // Guess 100 random points inside the bounds, 
+  // put a marker at the first one contained by the polygon and break out of the loop
+  while (true) {
+    var ptLat = Math.random() * (ne.lat() - sw.lat()) + sw.lat();
+    var ptLng = Math.random() * (ne.lng() - sw.lng()) + sw.lng();
+    var point = new google.maps.LatLng(ptLat,ptLng);
+    if (google.maps.geometry.poly.containsLocation(point,polygon)) {
+      break;
+    }
   }
 
   return point;
@@ -208,23 +249,12 @@ function verificaPonto(point){
       coordGateways[index],
       point
     );
-    if(distancia<=100)
+    if(distancia<=maxDistGatewayToPoint)
       return true;
     
   }
   return false;
     
-  /*
-  var flightPath = new google.maps.Polyline({
-    path: [coordGateways[0], coordClients[1]],
-    geodesic: true,
-    strokeColor: "#000000",
-    strokeOpacity: 1.0,
-    strokeWeight: 10
-  });
-
-  flightPath.setMap(map);
-  */
 }
 
 //Mostra a pocentagem de valores de cada zona
@@ -266,4 +296,21 @@ function bugfix() {
   });
 
   return data;
+}
+
+function criarArquivoInstancia(){
+  var conteudo = quantPontos+" "+maxDistGatewayToPoint+"\n";
+  
+  for (let i = 0; i < coordGateways.length; i++) 
+    conteudo += coordGateways[i].toUrlValue()+"\n";
+  
+  for (let i = 0; i < coordClients.length; i++) 
+    conteudo += coordClients[i].toUrlValue()+"\n";
+  
+  var hiddenElement = document.createElement("a");
+  hiddenElement.href = "data:attachment/text," + encodeURI(conteudo);
+  hiddenElement.target = "_blank";
+  hiddenElement.download = "instancia.txt";
+  hiddenElement.click();
+
 }
