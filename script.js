@@ -19,9 +19,17 @@ function initMap() {
 
 function main() {
   initMap();
+  if(document.getElementById("qtnPts").value < 1000)  
+    quantPontos = 1000;
+  else 
+    quantPontos = document.getElementById("qtnPts").value
+ 
+  if(document.getElementById("dist").value < 100)  
+    maxDistGatewayToPoint = 100;
+  else 
+    maxDistGatewayToPoint = document.getElementById("dist").value
+
   google.maps.event.trigger(map, 'resize');
-  quantPontos = document.getElementById("qtnPts").value;
-  maxDistGatewayToPoint = document.getElementById("dist").value;
   nGateways = Math.round((quantPontos * 20) / 100)
   finalData=[];
   points=[];
@@ -45,7 +53,7 @@ function main() {
     });
 
     var sumZones = sumPopZone();
-    //console.log(testeDeRandomizacao(sumZones));
+    console.log(testeDeRandomizacao(sumZones));
     var zona, bairros, point;
     for (let index = 0; index < 1000; index++) {
       zona = randomZone(sumZones);
