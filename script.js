@@ -291,6 +291,60 @@ function testeDeRandomizacao(sumZones) {
   
 }
 //-----------------------------------
+/** 
+ * Varre os vetores de coordenadas dos Gateways e Clientes
+ * Cria um arquivo que será automáticamente baixado 
+ * @returns arquivo instancia.txt
+ * A primeira linha do arquivo contem os dados passados no form (Total de pontos e alcance do dispositivo)
+ * As linhas seguintes contem a latitude e longitude de cada 
+ * Gateway (20% do total) e Cliente (80% do total) 
+ */
+function sortearEspalhamentoEspectral(){
+  quantGateways=200
+  var quant10 = parseInt(quantGateways/3) ;
+  var quant11 = parseInt(quantGateways/3);
+  var quant12 = parseInt(quantGateways/3) - (  parseInt(quantGateways/3)*3 - quantGateways );
+  var espalhamentoSorteado=[];
+  for (let i = 0; i < quantGateways; i++) {
+    var op = Math.floor(Math.random() * (12 + 1 -10)+10 );
+    switch (op) {
+      case 10:
+        if(quant10!=0){
+          espalhamentoSorteado.push(op)
+          quant10--;
+        }
+        else 
+          i--
+      break;
+
+      case 11:
+        if(quant11!=0){
+          espalhamentoSorteado.push(op)
+          quant11--;
+        }
+        else 
+          i--
+      break;
+      
+      case 12:
+        if(quant12!=0){
+          espalhamentoSorteado.push(op)
+          quant12--;
+        }
+        else 
+          i--
+      break;
+    }
+    
+  }
+
+  return espalhamentoSorteado;
+
+}
+//-----------------------------------
+
+
+
 
 /** 
  * Varre os vetores de coordenadas dos Gateways e Clientes
@@ -301,19 +355,26 @@ function testeDeRandomizacao(sumZones) {
  * Gateway (20% do total) e Cliente (80% do total) 
  */
 function criarArquivoInstancia(){
-  var conteudo = quantPontos+" "+maxDistGatewayToPoint+"\n";
+  var conteudo;
+  var arrayEspalhamento = [];
+  for (let j = 0; j < 3; j++) {
+    conteudo = quantPontos+" "+maxDistGatewayToPoint+"\n";
+    arrayEspalhamento = sortearEspalhamentoEspectral();
+    
+    for (let i = 0; i < coordGateways.length; i++) 
+    conteudo += coordGateways[i].toUrlValue()+","+arrayEspalhamento[i]+"\n";
   
-  for (let i = 0; i < coordGateways.length; i++) 
-    conteudo += coordGateways[i].toUrlValue()+"\n";
-  
-  for (let i = 0; i < coordClients.length; i++) 
-    conteudo += coordClients[i].toUrlValue()+"\n";
-  
-  var hiddenElement = document.createElement("a");
-  hiddenElement.href = "data:attachment/text," + encodeURI(conteudo);
-  hiddenElement.target = "_blank";
-  hiddenElement.download = "instancia.txt";
-  hiddenElement.click();
+    for (let i = 0; i < coordClients.length; i++) 
+      conteudo += coordClients[i].toUrlValue()+"\n";
+    
+    var hiddenElement = document.createElement("a");
+    hiddenElement.href = "data:attachment/text," + encodeURI(conteudo);
+    hiddenElement.target = "_blank";
+    hiddenElement.download = "instancia_"+quantPontos+"_"+maxDistGatewayToPoint+".txt";
+    hiddenElement.click();
+    
+  }
+
 
 }
 //-----------------------------------
