@@ -348,7 +348,11 @@ function sortearEspalhamentoEspectral(tamVetor){
  * @returns arquivo instancia.txt
  * A primeira linha do arquivo contem os dados passados no form (Total de pontos e alcance do dispositivo)
  * As linhas seguintes contem a latitude e longitude de cada 
- * Gateway (20% do total) e Cliente (80% do total) 
+ * Gateway (20% do total) e Cliente (80% do total)
+ * Gateways: 
+ *  latitude, longitude, Espalhamento Espectral
+ * Cliente
+ *  latitude, longitude, Espalhamento Espectral(10,11,12), Potencia de Transmissao(14,20)
  */
 function criarArquivoInstancia(){
   var conteudo;
