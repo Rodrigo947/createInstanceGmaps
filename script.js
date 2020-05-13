@@ -299,13 +299,12 @@ function testeDeRandomizacao(sumZones) {
  * As linhas seguintes contem a latitude e longitude de cada 
  * Gateway (20% do total) e Cliente (80% do total) 
  */
-function sortearEspalhamentoEspectral(){
-  quantGateways=200
-  var quant10 = parseInt(quantGateways/3) ;
-  var quant11 = parseInt(quantGateways/3);
-  var quant12 = parseInt(quantGateways/3) - (  parseInt(quantGateways/3)*3 - quantGateways );
+function sortearEspalhamentoEspectral(tamVetor){
+  var quant10 = parseInt(tamVetor/3) ;
+  var quant11 = parseInt(tamVetor/3);
+  var quant12 = parseInt(tamVetor/3) - (  parseInt(tamVetor/3)*3 - tamVetor );
   var espalhamentoSorteado=[];
-  for (let i = 0; i < quantGateways; i++) {
+  for (let i = 0; i < tamVetor; i++) {
     var op = Math.floor(Math.random() * (12 + 1 -10)+10 );
     switch (op) {
       case 10:
@@ -343,9 +342,6 @@ function sortearEspalhamentoEspectral(){
 }
 //-----------------------------------
 
-
-
-
 /** 
  * Varre os vetores de coordenadas dos Gateways e Clientes
  * Cria um arquivo que será automáticamente baixado 
@@ -356,16 +352,26 @@ function sortearEspalhamentoEspectral(){
  */
 function criarArquivoInstancia(){
   var conteudo;
-  var arrayEspalhamento = [];
+  var arrayEspalhamentoGateway = [];
+  var arrayEspalhamentoDispositivo = [];
   for (let j = 0; j < 3; j++) {
     conteudo = quantPontos+" "+maxDistGatewayToPoint+"\n";
-    arrayEspalhamento = sortearEspalhamentoEspectral();
+    arrayEspalhamentoGateway = sortearEspalhamentoEspectral(quantGateways);
+    arrayEspalhamentoDispositivo = sortearEspalhamentoEspectral(quantPontos);
     
     for (let i = 0; i < coordGateways.length; i++) 
-    conteudo += coordGateways[i].toUrlValue()+","+arrayEspalhamento[i]+"\n";
+      conteudo += coordGateways[i].toUrlValue()+","+arrayEspalhamentoGateway[i]+"\n";
   
-    for (let i = 0; i < coordClients.length; i++) 
-      conteudo += coordClients[i].toUrlValue()+"\n";
+    var op;
+    for (let i = 0; i < coordClients.length; i++) {
+      op = Math.floor(Math.random() * (2 - 1 + 1) ) + 1
+      if(op==1)
+        conteudo += coordClients[i].toUrlValue()+","+arrayEspalhamentoDispositivo[i]+","+14+"\n";
+      else
+        conteudo += coordClients[i].toUrlValue()+","+arrayEspalhamentoDispositivo[i]+","+20+"\n";
+    }
+
+      
     
     var hiddenElement = document.createElement("a");
     hiddenElement.href = "data:attachment/text," + encodeURI(conteudo);
