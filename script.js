@@ -1,12 +1,4 @@
-let map;
-let finalData=[];
-let points=[];
-let quantPontos;
-let maxDistGatewayToPoint;
-let nGateways;
-let quantGateways = 0;
-let coordGateways = [];
-let coordClients = [];
+        
 
 //Inicia o mapa do Google Maps
 function initMap() {
@@ -19,29 +11,49 @@ function initMap() {
 
 function main() {
   initMap();
-  //
+  finalData = []             // Dados do Arquivo JSONBounds.txt
+  quantPontos = 0            // Gateways + Dispositivos
+  nGateways = 0              // Quantidade total de Gateways
+  configInstancia = {}       // Configurações da instancia
+  structGateways = {}        // Todos os Gateways e seus atributos
+  structDispositivos = {}    // Todos os Dispostitivos e seus atributos
+  quantGateways = 0  
+  infoWindow = new google.maps.InfoWindow({});
   if(document.getElementById("qtnPts").value < 1000)  
     quantPontos = 1000;
   else 
     quantPontos = document.getElementById("qtnPts").value
  
-  if(document.getElementById("dist").value < 100)  
-    maxDistGatewayToPoint = 100;
+  if(document.getElementById("porcentagem").value < 10)  
+    porcentagemGateway = 10;
   else 
-    maxDistGatewayToPoint = document.getElementById("dist").value
-
-  google.maps.event.trigger(map, 'resize');
-  nGateways = Math.round((quantPontos * 20) / 100)
-  finalData=[];
-  points=[];
-  quantGateways = 0;
-  coordGateways = []; // Coordenadas dos Gateways
-  coordClients = []; // Coordenadas dos Clientes
+    if(document.getElementById("porcentagem").value > 100)  
+      porcentagemGateway = 100;
+    else
+      porcentagemGateway = document.getElementById("porcentagem").value
   
+  var sfMin = parseInt($("#sfMin").val())
+  var sfMax = parseInt($("#sfMax").val())
+
+  google.maps.event.trigger(map, 'resize'); //reiniciar o mapa 
+  nGateways = Math.round((quantPontos * porcentagemGateway) / 100) //quantidade total de Gateways
+
+  configInstancia = {
+    quantPontos : quantPontos,
+    porcentagemGateway: porcentagemGateway,
+    totalGateways: nGateways,
+    totalDispositivos: quantPontos - nGateways,
+    sfMin: sfMin,
+    sfMax: sfMax,
+    dbi1: parseInt($("#dbiMin").val()),
+    dbi2: parseInt($("#dbiMax").val())
+  }
   
   $.getJSON("JSONBounds.txt", function(data) {
     finalData = data;
     finalData[69].coordenadas = bugfix(); //Problema com o bairro de Nossa Senhora de lourdes
+
+    //Desenhar poligonos que definem o bairro
     finalData.forEach(function(item) {
       var polygon = new google.maps.Polygon({
         path: item.coordenadas,
@@ -52,29 +64,60 @@ function main() {
       });
       polygon.setMap(map);
     });
+    //-----------
 
     var sumZones = sumPopZone();
     testeDeRandomizacao(sumZones); //TESTE DE RANDOMIZAÇÃO DE ZONAS
     var zona, bairros, point;
-    for (let i = 0; i < quantPontos; i++) {
-      
+    
+    //Criando Gateways
+    for (let i = 0; i < nGateways; i++) {
+      gateway = {}
       zona = randomZone(sumZones);
       bairros = bairrosZona(zona);
       point = gerarPonto(bairros);
-      
-      if(quantGateways==nGateways){
-        while(!verificaPonto(point)){
-       
-          zona = randomZone(sumZones);
-          bairros = bairrosZona(zona);
-          point = gerarPonto(bairros);
-        }
-      }
-      desenhaPonto(point);
-      
+      gateway.id = i
+      gateway.lat = point.lat()
+      gateway.lng = point.lng()
+      gateway.sf = 0
+      gateway.quantDisp = 0
+      structGateways[i] = gateway
+      desenhaPonto(gateway,"Gateway");
     }
+    //----
 
-    criarArquivoInstancia();
+    //Criando Dispositivos
+  
+    for (let i = 0; i < (quantPontos-nGateways); i++) {
+      dispositivo = {}
+      zona = randomZone(sumZones);
+      bairros = bairrosZona(zona);
+      point = gerarPonto(bairros);
+      dispositivo.id = i
+      dispositivo.lat = point.lat()
+      dispositivo.lng = point.lng()
+      dispositivo.sf = 0
+      dispositivo.dbi = 0  
+
+      /*while(!verificaPonto(dispositivo)){
+        zona = randomZone(sumZones);
+        bairros = bairrosZona(zona);
+        point = gerarPonto(bairros);
+        dispositivo.id = i
+        dispositivo.lat = point.lat()
+        dispositivo.lng = point.lng()
+        dispositivo.sf = 0
+        dispositivo.dbi = 0  
+      }*/
+      
+      structDispositivos[i] = dispositivo
+      desenhaPonto(dispositivo,"Dispositivo");
+    }
+  
+    for (let i = 0; i < 1; i++) {
+      sortearEspalhamentoEspectral(structGateways,nGateways,sfMin,sfMax)
+      criarArquivoInstancia()
+    }
   });
 }
 //-----------------------------------
@@ -208,58 +251,67 @@ function randomizarLatLong(polygon) {
 //-----------------------------------
 
 /** 
- * Desenha de verde os primeiros 20% pontos e o restante de azul e
- * popula os vetores com os pontos criados  
+ * Desenha de verde os Gateways os Dispositivos de azul 
  * @param point ponto gerado pela função "gerarPonto()" que segue as configurações de ponto do Google Maps
+ * @param op O que deve ser desenhado
  * @returns seta o ponto colorido no mapa 
  */
-function desenhaPonto(point){
-  if (quantGateways != nGateways) {
-    quantGateways++;
 
-    var marcador = new google.maps.Circle({
-      strokeColor: "#00FF00",
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: "#00FF00",
-      fillOpacity: 0.35,
-      map: map,
-      center: point,
-      radius: 20
-    });
-    coordGateways.push(point);
-  } else {
-    var marcador = new google.maps.Circle({
-      strokeColor: "#0000FF",
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: "#0000FF",
-      fillOpacity: 0.35,
-      map: map,
-      center: point,
-      radius: 20
-    });
-    coordClients.push(point);
+
+function desenhaPonto(point,op){
+
+  var config = {
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillOpacity: 0.35,
+    map: map,
+    center: {lat: point.lat, lng: point.lng},
+    radius: 20
   }
 
+  config.contentString = "<div><p>ID: "+point.id+"</p>"
+                       + "<p>Lat: "+point.lat+"</p>"
+                       + "<p>Lng: "+point.lng+"</p>"
+                       + "<p>SF: "+point.sf+"</p>"
+
+  if(op == "Gateway"){
+    config.fillColor = "#00FF00"
+    config.strokeColor = "#00FF00"
+    config.contentString += "</div>"
+  }
+  else {
+    config.fillColor = "#0000FF"
+    config.strokeColor = "#0000FF"
+    config.contentString += "<p>dBi:"+point.dbi+"</p></div>"
+  }
+
+  var marcador = new google.maps.Circle(config);
+  
+  /*marcador.addListener("click", function() {
+    infoWindow.setContent(this.contentString);
+    infoWindow.setPosition(this.getCenter());
+    infoWindow.open(map);
+  });*/
   marcador.setMap(map);
 }
 //-----------------------------------
 
 /** 
- * Verifica se o ponto esta no alcance de pelo menos um gateway
- * Função apenas para verificar se a função de randomização de zonas "randomZone()" corresponde com a porcentagem real
- * @param point ponto gerado pela função "gerarPonto()" que segue as configurações de ponto do Google Maps
+ * Verifica se o dispositivo esta no alcance de pelo menos um gateway
+ * @param dispositivo 
  * @returns bollean 
  */
-function verificaPonto(point){
+function verificaPonto(dispositivo){
   var distancia = 0
-  for (let index = 0; index < coordGateways.length; index++) {
+
+  for (let index = 0; index < nGateways; index++) {
+    gateway = new google.maps.LatLng(structGateways[index].lat,structGateways[index].lng);
+    dispositivo = new google.maps.LatLng(dispositivo.lat,dispositivo.lng);
     distancia = google.maps.geometry.spherical.computeDistanceBetween(
-      coordGateways[index],
-      point
+      gateway,
+      dispositivo
     );
-    if(distancia<=maxDistGatewayToPoint)
+    //if(distancia<=matrizAlcance[dispositivo.dbi][dispositivo.sf])
       return true;
     
   }
@@ -292,53 +344,58 @@ function testeDeRandomizacao(sumZones) {
 }
 //-----------------------------------
 /** 
- * Varre os vetores de coordenadas dos Gateways e Clientes
- * Cria um arquivo que será automáticamente baixado 
- * @returns arquivo instancia.txt
- * A primeira linha do arquivo contem os dados passados no form (Total de pontos e alcance do dispositivo)
- * As linhas seguintes contem a latitude e longitude de cada 
- * Gateway (20% do total) e Cliente (80% do total) 
- */
-function sortearEspalhamentoEspectral(tamVetor){
-  var quant10 = parseInt(tamVetor/3) ;
-  var quant11 = parseInt(tamVetor/3);
-  var quant12 = parseInt(tamVetor/3) - (  parseInt(tamVetor/3)*3 - tamVetor );
-  var espalhamentoSorteado=[];
-  for (let i = 0; i < tamVetor; i++) {
-    var op = Math.floor(Math.random() * (12 + 1 -10)+10 );
-    switch (op) {
-      case 10:
-        if(quant10!=0){
-          espalhamentoSorteado.push(op)
-          quant10--;
-        }
-        else 
-          i--
-      break;
+ * Preenche o array com espalhamento espectral distribuido de forma randomizada e uniforme
+ * @param array SF minimo
+ * @param sfMin SF minimo
+ * @param sfMin SF maximo 
 
-      case 11:
-        if(quant11!=0){
-          espalhamentoSorteado.push(op)
-          quant11--;
-        }
-        else 
-          i--
-      break;
-      
-      case 12:
-        if(quant12!=0){
-          espalhamentoSorteado.push(op)
-          quant12--;
-        }
-        else 
-          i--
-      break;
+ */
+function sortearEspalhamentoEspectral(array,tamArray,sfMin,sfMax){
+  
+  totalDeSf = {} //Array que ira garantir uma distribuiçao uniforme
+  quantSf = sfMax - sfMin + 1 //Quantidade de SFs diferentes
+  totalDeCadaSf = parseInt(tamArray/quantSf) //Quantidade que cada SF deve ter de Gateways
+  opEscolhaSFs = [] //Opções de escolha de SFs
+
+  for (let r = sfMin; r < sfMax; r++){
+    totalDeSf[r] = totalDeCadaSf
+    opEscolhaSFs.push(r)
+  } 
+
+  totalDeSf[sfMax] = ( tamArray - totalDeCadaSf * (quantSf-1) )
+  opEscolhaSFs.push(sfMax)
+
+  var op;
+  //Math.floor(Math.random() * (sfMax + 1 - sfMin) + sfMin )
+  for (let r = 0; r < tamArray; r++) {
+    opEscolhaSFs = shuffle(opEscolhaSFs)
+    op = opEscolhaSFs[0]
+    if(totalDeSf[op]==0){
+      r--
+      opEscolhaSFs.shift() //remove o primeiro valor do vetor
     }
-    
+    else{
+      totalDeSf[op]--
+      array[r].sf = op
+    }
   }
 
-  return espalhamentoSorteado;
+}
 
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  while (0 !== currentIndex) {
+
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
 }
 //-----------------------------------
 
@@ -356,35 +413,17 @@ function sortearEspalhamentoEspectral(tamVetor){
  */
 function criarArquivoInstancia(){
   var conteudo;
-  var arrayEspalhamentoGateway = [];
-  var arrayEspalhamentoDispositivo = [];
-  for (let j = 0; j < 3; j++) {
-    conteudo = quantPontos+" "+maxDistGatewayToPoint+"\n";
-    arrayEspalhamentoGateway = sortearEspalhamentoEspectral(quantGateways);
-    arrayEspalhamentoDispositivo = sortearEspalhamentoEspectral(quantPontos);
-    
-    for (let i = 0; i < coordGateways.length; i++) 
-      conteudo += coordGateways[i].toUrlValue()+","+arrayEspalhamentoGateway[i]+"\n";
+  conteudo = JSON.stringify(configInstancia, null, ' ')+"\n"
+  conteudo += JSON.stringify(matrizAlcance, null, ' ')+"\n"
+  conteudo += JSON.stringify(structGateways, null, ' ')+"\n"
+  conteudo += JSON.stringify(structDispositivos, null, ' ')
   
-    var op;
-    for (let i = 0; i < coordClients.length; i++) {
-      op = Math.floor(Math.random() * (2 - 1 + 1) ) + 1
-      if(op==1)
-        conteudo += coordClients[i].toUrlValue()+","+arrayEspalhamentoDispositivo[i]+","+14+"\n";
-      else
-        conteudo += coordClients[i].toUrlValue()+","+arrayEspalhamentoDispositivo[i]+","+20+"\n";
-    }
-
-      
+  var hiddenElement = document.createElement("a");
+  hiddenElement.href = "data:attachment/text," + encodeURI(conteudo);
+  hiddenElement.target = "_blank";
+  hiddenElement.download = "instancia_"+quantPontos+".txt";
+  hiddenElement.click();
     
-    var hiddenElement = document.createElement("a");
-    hiddenElement.href = "data:attachment/text," + encodeURI(conteudo);
-    hiddenElement.target = "_blank";
-    hiddenElement.download = "instancia_"+quantPontos+"_"+maxDistGatewayToPoint+".txt";
-    hiddenElement.click();
-    
-  }
-
 
 }
 //-----------------------------------
