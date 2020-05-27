@@ -52,18 +52,29 @@
                 </div>
 
                 <div class="form-group row">
-                  <label class="col-6 col-form-label">Potências:</label>
-                  <input id="dbiMin" type="number" min="14" max="20" value="14" class="col-2 form-control">
+                  <label class="col-6 col-form-label">Potências (dBm):</label>
+                  <input id="dbmMin" type="number" min="14" max="20" value="14" class="col-2 form-control">
                   <label class="col-2 col-form-label text-center">e</label>
-                  <input id="dbiMax" type="number" min="14" max="20" value="20" class="col-2 form-control">
+                  <input id="dbmMax" type="number" min="14" max="20" value="20" class="col-2 form-control">
+                </div>
+
+                <div class="form-group row">
+                  <label class="col-6 col-form-label">Ganho (dBi):</label>
+                  <input id="dbi" type="number" min="0" value="2.15" step="0.01" class="col-2 form-control">
                 </div>
 
                 <div class="form-group row">
                   <div class="col-12">
-                    <table class="table table-bordered table-hover">
+                    <table class="table table-bordered">
                       <thead id="thead">
                         <tr>
-                          <th colspan="3" class="text-center">Tabela de Alcance<button type="button" id="downloadJson" class="btn float-right"><i class="fas fa-download"></i></button></th>
+                          <th colspan="5" class="text-center">Tabela de Alcance<button type="button" id="downloadJson" class="btn float-right"><i class="fas fa-download"></i></button></th>
+                        </tr>
+                        <tr>
+                          <th class="text-center" rowspan="2" style="width: 7rem;">BW (kHz)</th>
+                          <th class="text-center" rowspan="2" style="width: 1rem;">SF</th>
+                          <th class="text-center" rowspan="2" style="width: 7rem;">Sensibilidade (dBm)</th>
+                          <th class="text-center" colspan="2">Potências (dBm)</th>
                         </tr>
                       </thead>
                       <tbody id="tbody">

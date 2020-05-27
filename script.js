@@ -45,8 +45,8 @@ function main() {
     totalDispositivos: quantPontos - nGateways,
     sfMin: sfMin,
     sfMax: sfMax,
-    dbi1: parseInt($("#dbiMin").val()),
-    dbi2: parseInt($("#dbiMax").val())
+    dbm1: parseInt($("#dbmMin").val()),
+    dbm2: parseInt($("#dbmMax").val())
   }
   
   $.getJSON("JSONBounds.txt", function(data) {
@@ -97,7 +97,7 @@ function main() {
       dispositivo.lat = point.lat()
       dispositivo.lng = point.lng()
       dispositivo.sf = 0
-      dispositivo.dbi = 0  
+      dispositivo.dbm = 0  
 
       /*while(!verificaPonto(dispositivo)){
         zona = randomZone(sumZones);
@@ -107,7 +107,7 @@ function main() {
         dispositivo.lat = point.lat()
         dispositivo.lng = point.lng()
         dispositivo.sf = 0
-        dispositivo.dbi = 0  
+        dispositivo.dbm = 0  
       }*/
       
       structDispositivos[i] = dispositivo
@@ -282,7 +282,7 @@ function desenhaPonto(point,op){
   else {
     config.fillColor = "#0000FF"
     config.strokeColor = "#0000FF"
-    config.contentString += "<p>dBi:"+point.dbi+"</p></div>"
+    config.contentString += "<p>dbm:"+point.dbm+"</p></div>"
   }
 
   var marcador = new google.maps.Circle(config);
@@ -311,7 +311,7 @@ function verificaPonto(dispositivo){
       gateway,
       dispositivo
     );
-    //if(distancia<=matrizAlcance[dispositivo.dbi][dispositivo.sf])
+    //if(distancia<=matrizAlcance[dispositivo.dbm][dispositivo.sf])
       return true;
     
   }
