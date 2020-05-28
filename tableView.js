@@ -40,15 +40,33 @@ $(function() {
                 cellth2.innerHTML = $("#dbmMax").val()
         criarMatrizAlcance()
     })
+
     //---------
     
     //SFs
     $("#sfMin,#sfMax").on("change", function(){
+        sfMin = parseInt($("#sfMin").val())
+        sfMax = parseInt($("#sfMax").val())
+
+        if(sfMin>sfMax)
+            $("#btnCriar").prop('disabled', true);
+        else
+            $("#btnCriar").prop('disabled', false);
         popularlinhas()
     })
    
     $("#downloadJson").on("click",function(){
-        conteudo = JSON.stringify(matrizAlcance, null, ' ')
+        conteudo = "{"+"\n"
+        for (var [key, value] of Object.entries(matrizAlcance)) {
+          conteudo += "\"" + key + "\":{"
+          
+          for (var [key2, value2] of Object.entries(value)) 
+            conteudo += "\"" + key2 + "\":\"" + value2 + "\"," 
+          conteudo = conteudo.substr(0, conteudo.length - 1);
+          conteudo += "},\n"
+        }
+        conteudo = conteudo.substr(0, conteudo.length - 2);
+        conteudo += "\n}"+"\n"
         var hiddenElement = document.createElement("a");
         hiddenElement.href = "data:attachment/text," + encodeURI(conteudo);
         hiddenElement.target = "_blank";
@@ -56,8 +74,12 @@ $(function() {
         hiddenElement.click();
     })
 
+    $("#dbi").on("change", function(){
+        criarMatrizAlcance()
+    })
    
 });
+
 
 
 function decimalAdjust(type, value, exp) {
@@ -162,7 +184,7 @@ function popularlinhas(){
         criarMatrizAlcance()
     }
 
-    $("#dbi,#sens7,#sens8,#sens9,#sens10,#sens11,#sens12").on("change", function(){
+    $("#sens7,#sens8,#sens9,#sens10,#sens11,#sens12").on("change", function(){
         criarMatrizAlcance()
     })
 

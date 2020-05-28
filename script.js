@@ -451,7 +451,7 @@ function criarArquivoInstancia(sfMin,sfMax){
     if(i!=structDispositivos.length-1)
       conteudo += JSON.stringify(structDispositivos[i]) + "," + "\n"
     else 
-      conteudo += JSON.stringify(structDispositivos[i]) + "\n" + "]" + ";\n"
+      conteudo += JSON.stringify(structDispositivos[i]) + "\n" + "]" + "\n"
   }
 
   var hiddenElement = document.createElement("a")
