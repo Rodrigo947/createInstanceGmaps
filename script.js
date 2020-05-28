@@ -15,8 +15,8 @@ function main() {
   quantPontos = 0            // Gateways + Dispositivos
   nGateways = 0              // Quantidade total de Gateways
   configInstancia = {}       // Configurações da instancia
-  structGateways = {}        // Todos os Gateways e seus atributos
-  structDispositivos = {}    // Todos os Dispostitivos e seus atributos
+  structGateways = []        // Todos os Gateways e seus atributos
+  structDispositivos = []    // Todos os Dispostitivos e seus atributos
   quantGateways = 0  
   infoWindow = new google.maps.InfoWindow({});
   if(document.getElementById("qtnPts").value < 1000)  
@@ -35,18 +35,19 @@ function main() {
   var sfMin = parseInt($("#sfMin").val())
   var sfMax = parseInt($("#sfMax").val())
 
+  var dbm1 = parseInt($("#dbmMin").val())
+  var dbm2 = parseInt($("#dbmMax").val())
+
   google.maps.event.trigger(map, 'resize'); //reiniciar o mapa 
   nGateways = Math.round((quantPontos * porcentagemGateway) / 100) //quantidade total de Gateways
 
   configInstancia = {
-    quantPontos : quantPontos,
+    quantPoints : quantPontos,
     porcentagemGateway: porcentagemGateway,
     totalGateways: nGateways,
-    totalDispositivos: quantPontos - nGateways,
-    sfMin: sfMin,
-    sfMax: sfMax,
-    dbm1: parseInt($("#dbmMin").val()),
-    dbm2: parseInt($("#dbmMax").val())
+    totalClients: quantPontos - nGateways,
+    dbm1: dbm1,
+    dbm2: dbm2
   }
   
   $.getJSON("JSONBounds.txt", function(data) {
@@ -97,27 +98,20 @@ function main() {
       dispositivo.lat = point.lat()
       dispositivo.lng = point.lng()
       dispositivo.sf = 0
-      dispositivo.dbm = 0  
-
-      /*while(!verificaPonto(dispositivo)){
-        zona = randomZone(sumZones);
-        bairros = bairrosZona(zona);
-        point = gerarPonto(bairros);
-        dispositivo.id = i
-        dispositivo.lat = point.lat()
-        dispositivo.lng = point.lng()
-        dispositivo.sf = 0
-        dispositivo.dbm = 0  
-      }*/
+      dispositivo.dbm = sorteardBm(dbm1,dbm2)  
       
       structDispositivos[i] = dispositivo
       desenhaPonto(dispositivo,"Dispositivo");
     }
   
-    for (let i = 0; i < 1; i++) {
-      sortearEspalhamentoEspectral(structGateways,nGateways,sfMin,sfMax)
-      criarArquivoInstancia()
+    for (let i = sfMin; i <= sfMax; i++) {
+      sortearEspalhamentoEspectral(structGateways,nGateways,i,i)
+      sortearEspalhamentoEspectral(structDispositivos,quantPontos-nGateways,i,i)
+      criarArquivoInstancia(i,i)
     }
+    sortearEspalhamentoEspectral(structGateways,nGateways,sfMin,sfMax)
+    sortearEspalhamentoEspectral(structDispositivos,quantPontos-nGateways,sfMin,sfMax)
+    criarArquivoInstancia(sfMin,sfMax)
   });
 }
 //-----------------------------------
@@ -298,6 +292,7 @@ function desenhaPonto(point,op){
 
 /** 
  * Verifica se o dispositivo esta no alcance de pelo menos um gateway
+ * DESCONTINUADA
  * @param dispositivo 
  * @returns bollean 
  */
@@ -366,7 +361,7 @@ function sortearEspalhamentoEspectral(array,tamArray,sfMin,sfMax){
   opEscolhaSFs.push(sfMax)
 
   var op;
-  //Math.floor(Math.random() * (sfMax + 1 - sfMin) + sfMin )
+  
   for (let r = 0; r < tamArray; r++) {
     opEscolhaSFs = shuffle(opEscolhaSFs)
     op = opEscolhaSFs[0]
@@ -399,6 +394,19 @@ function shuffle(array) {
 }
 //-----------------------------------
 
+function sorteardBm(dbm1,dbm2){
+  //Math.floor(Math.random() * (Max + 1 - Min) + Min )
+  op = Math.floor(Math.random() * (2 + 1 - 1) + 1 )
+
+  switch (op) {
+    case 1:
+      return dbm1
+   case 2:
+      return dbm2
+  }
+
+}
+
 /** 
  * Varre os vetores de coordenadas dos Gateways e Clientes
  * Cria um arquivo que será automáticamente baixado 
@@ -411,18 +419,49 @@ function shuffle(array) {
  * Cliente
  *  latitude, longitude, Espalhamento Espectral(10,11,12), Potencia de Transmissao(14,20)
  */
-function criarArquivoInstancia(){
+function criarArquivoInstancia(sfMin,sfMax){
   var conteudo;
-  conteudo = JSON.stringify(configInstancia, null, ' ')+"\n"
-  conteudo += JSON.stringify(matrizAlcance, null, ' ')+"\n"
-  conteudo += JSON.stringify(structGateways, null, ' ')+"\n"
-  conteudo += JSON.stringify(structDispositivos, null, ' ')
+  configInstancia.sfMin = sfMin
+  configInstancia.sfMax = sfMax
+
+  conteudo = JSON.stringify(configInstancia,null," ")+";\n"
   
-  var hiddenElement = document.createElement("a");
-  hiddenElement.href = "data:attachment/text," + encodeURI(conteudo);
-  hiddenElement.target = "_blank";
-  hiddenElement.download = "instancia_"+quantPontos+".txt";
-  hiddenElement.click();
+  conteudo += "{"+"\n"
+  for (var [key, value] of Object.entries(matrizAlcance)) {
+    conteudo += "\"" + key + "\":{"
+    
+    for (var [key2, value2] of Object.entries(value)) 
+      conteudo += "\"" + key2 + "\":\"" + value2 + "\"," 
+    conteudo = conteudo.substr(0, conteudo.length - 1);
+    conteudo += "},\n"
+  }
+  conteudo = conteudo.substr(0, conteudo.length - 2);
+  conteudo += "\n};"+"\n"
+
+  conteudo += "["+"\n"
+  for (let i = 0; i < structGateways.length; i++) {
+    if(i!=structGateways.length-1)
+      conteudo += JSON.stringify(structGateways[i]) + "," + "\n"
+    else 
+      conteudo += JSON.stringify(structGateways[i]) + "\n" + "]" + ";\n"
+  }
+
+  conteudo += "["+"\n"
+  for (let i = 0; i < structDispositivos.length; i++) {
+    if(i!=structDispositivos.length-1)
+      conteudo += JSON.stringify(structDispositivos[i]) + "," + "\n"
+    else 
+      conteudo += JSON.stringify(structDispositivos[i]) + "\n" + "]" + ";\n"
+  }
+
+  var hiddenElement = document.createElement("a")
+  hiddenElement.href = "data:attachment/text," + encodeURI(conteudo)
+  hiddenElement.target = "_blank"
+  if(sfMin==sfMax)
+    hiddenElement.download = "instancia_"+nGateways+"_"+(quantPontos-nGateways)+"_"+sfMax+".txt"
+  else
+    hiddenElement.download = "instancia_"+nGateways+"_"+(quantPontos-nGateways)+".txt"
+  hiddenElement.click()
     
 
 }
