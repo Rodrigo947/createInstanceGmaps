@@ -12,3 +12,11 @@ body { margin:0;}
   height: 100%;
   overflow: auto;
 }
+
+select{
+  outline: none;
+}
+
+option,option:hover,option:focus{
+  outline: none !important;
+}

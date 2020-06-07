@@ -42,8 +42,8 @@ function main() {
   nGateways = Math.round((quantPontos * porcentagemGateway) / 100) //quantidade total de Gateways
 
   configInstancia = {
-    quantPoints : quantPontos,
-    porcentagemGateway: porcentagemGateway,
+    quantPoints : parseInt(quantPontos),
+    porcentagemGateway: parseInt(porcentagemGateway),
     totalGateways: nGateways,
     totalClients: quantPontos - nGateways,
     dbm1: dbm1,
@@ -425,6 +425,8 @@ function criarArquivoInstancia(sfMin,sfMax){
   configInstancia.sfMax = sfMax
 
   conteudo = JSON.stringify(configInstancia,null," ")+";\n"
+
+  conteudo += JSON.stringify(matrizSNRMinima,null," ")+";\n"
   
   conteudo += "{"+"\n"
   for (var [key, value] of Object.entries(matrizAlcance)) {

@@ -3,6 +3,14 @@ matrizSensibilidade = {
     250:{7:-120,8:-123,9:-125,10:-128,11:-130,12:-133},
     500:{7:-116,8:-119,9:-122,10:-125,11:-128,12:-130}
 }
+matrizSNRMinima = {
+    7: -7.5,
+    8: -10,
+    9: -12.5,
+    10: -15,
+    11: -17.5,
+    12: -20
+}
 
 $(function() {
      
@@ -16,6 +24,7 @@ $(function() {
     cellth2.innerHTML = $("#dbmMax").val()
     band = 125
     popularlinhas()
+    popularTabelaSNR()
     criarMatrizAlcance()
 
 
@@ -53,6 +62,7 @@ $(function() {
         else
             $("#btnCriar").prop('disabled', false);
         popularlinhas()
+        popularTabelaSNR()
     })
    
     $("#downloadJson").on("click",function(){
@@ -198,3 +208,33 @@ function popularlinhas(){
         criarMatrizAlcance()
     })
 }
+
+function popularTabelaSNR(){
+    tableSNR = document.getElementById("tbodySNR")
+    tableSNR.innerHTML=""
+    
+    rowSF = tableSNR.insertRow(0)
+    rowSNR = tableSNR.insertRow(1)
+    ncolunas = 0
+    cell = rowSF.insertCell(ncolunas);
+    cell.innerHTML = "SF"
+    cell = rowSNR.insertCell(ncolunas);
+    cell.innerHTML = "SNR Mínima (db)"
+    
+    for (i = sfMin; i <= sfMax; i++) {
+        ncolunas++
+        cell = rowSF.insertCell(ncolunas)
+        cell.innerHTML = i
+        cell = rowSNR.insertCell(ncolunas)
+        cell.innerHTML = "<input type='number' id=snr"+i+" class='form-control' value='"+matrizSNRMinima[i]+"' >"
+        
+        $("#snr"+i).on("change", function(){
+          matrizSNRMinima[this.id.split("snr")[1]] = parseFloat(this.value)
+        })
+    }
+
+    $("#tituloSNR").attr('colspan',sfMax-sfMin+2)
+
+    
+}
+
