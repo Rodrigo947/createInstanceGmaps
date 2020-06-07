@@ -43,7 +43,7 @@ function main() {
 
   configInstancia = {
     quantPoints : parseInt(quantPontos),
-    porcentagemGateway: parseInt(porcentagemGateway),
+    percentGateway: parseInt(porcentagemGateway),
     totalGateways: nGateways,
     totalClients: quantPontos - nGateways,
     dbm1: dbm1,
