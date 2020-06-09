@@ -47,7 +47,8 @@ function main() {
     totalGateways: nGateways,
     totalClients: quantPontos - nGateways,
     dbm1: dbm1,
-    dbm2: dbm2
+    dbm2: dbm2,
+    dBiGain : parseFloat($("#dbi").val())
   }
   
   $.getJSON("JSONBounds.txt", function(data) {
@@ -426,7 +427,9 @@ function criarArquivoInstancia(sfMin,sfMax){
 
   conteudo = JSON.stringify(configInstancia,null," ")+";\n"
 
-  conteudo += JSON.stringify(matrizSNRMinima,null," ")+";\n"
+  conteudo += JSON.stringify(matrizSNRMinima)+";\n"
+
+  conteudo += JSON.stringify(sensibilidades)+";\n"
   
   conteudo += "{"+"\n"
   for (var [key, value] of Object.entries(matrizAlcance)) {

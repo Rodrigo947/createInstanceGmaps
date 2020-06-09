@@ -124,9 +124,19 @@ function calcAlcanceMaximo(sensibilidade,potencia,ganhodBi){
 
 function criarMatrizAlcance(){
     matrizAlcance = {}
+        
+    sensibilidades = {
+        "bw": parseInt($("#bw").val())
+    }
 
-    ganhodBi = parseFloat($("#dbi").val())
+    sfMin = parseInt($("#sfMin").val())
+    sfMax = parseInt($("#sfMax").val())
+
+    for (let i = sfMin; i <= sfMax; i++) 
+        sensibilidades[i] = parseFloat($("#sens"+i).val())
+        
     
+    ganhodBi = parseFloat($("#dbi").val())
     var thead = document.getElementById("thead").lastElementChild
     var tbody = document.getElementById("tbody")
     
@@ -138,13 +148,13 @@ function criarMatrizAlcance(){
             row = tbody.children[j]
             if(j==0){
                 sf = row.children[1].innerText
-                sensibilidade = parseInt($("#sens"+sf).val())
+                sensibilidade = parseFloat($("#sens"+sf).val())
                 row.children[3+i].innerText = calcAlcanceMaximo(sensibilidade,potencia,ganhodBi)
                 matrizAlcance[potencia][sf] = row.children[3+i].innerText
             }
             else{
                 sf = row.children[0].innerText
-                sensibilidade = parseInt($("#sens"+sf).val())
+                sensibilidade = parseFloat($("#sens"+sf).val())
                 row.children[2+i].innerText = calcAlcanceMaximo(sensibilidade,potencia,ganhodBi)
                 matrizAlcance[potencia][sf] = row.children[2+i].innerText
             }
