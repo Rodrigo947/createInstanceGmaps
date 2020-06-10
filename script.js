@@ -436,7 +436,7 @@ function criarArquivoInstancia(sfMin,sfMax){
     conteudo += "\"" + key + "\":{"
     
     for (var [key2, value2] of Object.entries(value)) 
-      conteudo += "\"" + key2 + "\":\"" + value2 + "\"," 
+      conteudo += "\"" + key2 + "\":" + value2 + "," 
     conteudo = conteudo.substr(0, conteudo.length - 1);
     conteudo += "},\n"
   }
