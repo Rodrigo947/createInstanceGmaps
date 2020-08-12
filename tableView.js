@@ -20,33 +20,33 @@ $(function() {
     row = table.insertRow(2)
     cellth1 = row.insertCell(0);
     cellth2 = row.insertCell(1);
-    cellth1.innerHTML = $("#dbmMin").val()
-    cellth2.innerHTML = $("#dbmMax").val()
+    cellth1.innerHTML = $("#ptc1").val()
+    cellth2.innerHTML = $("#ptc2").val()
     band = 125
     popularlinhas()
     popularTabelaSNR()
     criarMatrizAlcance()
 
 
-    $("#dbmMin").on("change", function(){
-        if($("#dbmMin").val()<14)
+    $("#ptc1").on("change", function(){
+        if($("#ptc1").val()<14)
             cellth1.innerHTML = 14
         else
-            if($("#dbmMin").val()>20)
+            if($("#ptc1").val()>20)
                 cellth1.innerHTML = 20
             else
-                cellth1.innerHTML = $("#dbmMin").val()
+                cellth1.innerHTML = $("#ptc1").val()
         criarMatrizAlcance()
     })
 
-    $("#dbmMax").on("change", function(){
-        if($("#dbmMax").val()<14)
+    $("#ptc2").on("change", function(){
+        if($("#ptc2").val()<14)
             cellth2.innerHTML = 14
         else
-            if($("#dbmMax").val()>20)
+            if($("#ptc2").val()>20)
                 cellth2.innerHTML = 20
             else
-                cellth2.innerHTML = $("#dbmMax").val()
+                cellth2.innerHTML = $("#ptc2").val()
         criarMatrizAlcance()
     })
 
@@ -197,8 +197,8 @@ function popularlinhas(){
             cell1.innerHTML = i
             cell2.innerHTML = "<input type='number' id=sens"+i+" class='form-control' value='"+matrizSensibilidade[band][i]+"' >"
             $("#bw").val(band)
-            cell3.innerHTML = calcAlcanceMaximo(matrizSensibilidade[band][i],parseInt($("#dbmMin").val()),parseFloat($("#dbi").val()))
-            cell4.innerHTML = calcAlcanceMaximo(matrizSensibilidade[band][i],parseInt($("#dbmMax").val()),parseFloat($("#dbi").val()))
+            cell3.innerHTML = calcAlcanceMaximo(matrizSensibilidade[band][i],parseInt($("#ptc1").val()),parseFloat($("#dbi").val()))
+            cell4.innerHTML = calcAlcanceMaximo(matrizSensibilidade[band][i],parseInt($("#ptc2").val()),parseFloat($("#dbi").val()))
             j++
         }
         criarMatrizAlcance()

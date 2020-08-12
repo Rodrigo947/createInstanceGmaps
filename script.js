@@ -10,6 +10,9 @@ function initMap() {
 //-----------------------------------
 
 function main() {
+
+  
+
   initMap();
   finalData = []             // Dados do Arquivo JSONBounds.txt
   quantPontos = 0            // Gateways + Dispositivos
@@ -19,6 +22,7 @@ function main() {
   structDispositivos = []    // Todos os Dispostitivos e seus atributos
   quantGateways = 0  
   infoWindow = new google.maps.InfoWindow({});
+  /*
   if(document.getElementById("qtnPts").value < 1000)  
     quantPontos = 1000;
   else 
@@ -35,20 +39,28 @@ function main() {
   var sfMin = parseInt($("#sfMin").val())
   var sfMax = parseInt($("#sfMax").val())
 
-  var dbm1 = parseInt($("#dbmMin").val())
-  var dbm2 = parseInt($("#dbmMax").val())
-
+  var ptc1 = parseInt($("#ptc1").val())
+  var ptc2 = parseInt($("#ptc2").val())*/
+  //nGateways = Math.round((quantPontos * porcentagemGateway) / 100) //quantidade total de Gateways
   google.maps.event.trigger(map, 'resize'); //reiniciar o mapa 
-  nGateways = Math.round((quantPontos * porcentagemGateway) / 100) //quantidade total de Gateways
+
+  var sfMin = parseInt($("#sfMin").val())
+  var sfMax = parseInt($("#sfMax").val())
+  nGateways = document.getElementById("qtnGateways").value;
+  nClients =  document.getElementById("qtnClients").value
 
   configInstancia = {
-    quantPoints : parseInt(quantPontos),
-    percentGateway: parseInt(porcentagemGateway),
-    totalGateways: nGateways,
-    totalClients: quantPontos - nGateways,
-    dbm1: dbm1,
-    dbm2: dbm2,
-    dBiGain : parseFloat($("#dbi").val())
+    clientes: nClients,
+    gateways: nGateways,
+    assignPoints: document.getElementById("assignPoints").value,
+    //quantPoints : parseInt(quantPontos),
+    //percentGateway: parseInt(porcentagemGateway),
+    //totalGateways: nGateways,
+    //gateways: ,   
+    //clients: quantPontos - nGateways,
+    //ptc1: ptc1,
+    //ptc2: ptc2,
+    //dBiGain : parseFloat($("#dbi").val())
   }
   
   $.getJSON("JSONBounds.txt", function(data) {
@@ -81,8 +93,7 @@ function main() {
       gateway.id = i
       gateway.lat = point.lat()
       gateway.lng = point.lng()
-      gateway.sf = 0
-      gateway.quantDisp = 0
+      //gateway.sf = 0
       structGateways[i] = gateway
       desenhaPonto(gateway,"Gateway");
     }
@@ -90,7 +101,7 @@ function main() {
 
     //Criando Dispositivos
   
-    for (let i = 0; i < (quantPontos-nGateways); i++) {
+    for (let i = 0; i < nClients; i++) {
       dispositivo = {}
       zona = randomZone(sumZones);
       bairros = bairrosZona(zona);
@@ -98,20 +109,21 @@ function main() {
       dispositivo.id = i
       dispositivo.lat = point.lat()
       dispositivo.lng = point.lng()
-      dispositivo.sf = 0
-      dispositivo.dbm = sorteardBm(dbm1,dbm2)  
+      //dispositivo.sf = 0
+      //dispositivo.ptc = sortearPotencia(ptc1,ptc2)  
       
       structDispositivos[i] = dispositivo
       desenhaPonto(dispositivo,"Dispositivo");
     }
   
-    for (let i = sfMin; i <= sfMax; i++) {
+    /*for (let i = sfMin; i <= sfMax; i++) {
       sortearEspalhamentoEspectral(structGateways,nGateways,i,i)
       sortearEspalhamentoEspectral(structDispositivos,quantPontos-nGateways,i,i)
       criarArquivoInstancia(i,i)
     }
     sortearEspalhamentoEspectral(structGateways,nGateways,sfMin,sfMax)
     sortearEspalhamentoEspectral(structDispositivos,quantPontos-nGateways,sfMin,sfMax)
+    criarArquivoInstancia(sfMin,sfMax)*/
     criarArquivoInstancia(sfMin,sfMax)
   });
 }
@@ -122,7 +134,6 @@ function main() {
  * retorna um array com a população total de cada zona e o total da população da cidade
  * @returns array com a população de total de cada zonas
  */
-//
 function sumPopZone() {
   let zones = {
     total: 0
@@ -270,8 +281,8 @@ function desenhaPonto(point,op){
                        + "<p>SF: "+point.sf+"</p>"
 
   if(op == "Gateway"){
-    config.fillColor = "#00FF00"
-    config.strokeColor = "#00FF00"
+    config.fillColor = "#FF0000"
+    config.strokeColor = "#FF0000"
     config.contentString += "</div>"
   }
   else {
@@ -341,7 +352,7 @@ function testeDeRandomizacao(sumZones) {
 //-----------------------------------
 /** 
  * Preenche o array com espalhamento espectral distribuido de forma randomizada e uniforme
- * @param array SF minimo
+ * @param array 
  * @param sfMin SF minimo
  * @param sfMin SF maximo 
 
@@ -395,15 +406,15 @@ function shuffle(array) {
 }
 //-----------------------------------
 
-function sorteardBm(dbm1,dbm2){
+function sortearPotencia(ptc1,ptc2){
   //Math.floor(Math.random() * (Max + 1 - Min) + Min )
   op = Math.floor(Math.random() * (2 + 1 - 1) + 1 )
 
   switch (op) {
     case 1:
-      return dbm1
+      return ptc1
    case 2:
-      return dbm2
+      return ptc2
   }
 
 }
@@ -422,12 +433,12 @@ function sorteardBm(dbm1,dbm2){
  */
 function criarArquivoInstancia(sfMin,sfMax){
   var conteudo;
-  configInstancia.sfMin = sfMin
-  configInstancia.sfMax = sfMax
+  //configInstancia.sfMin = sfMin
+  //configInstancia.sfMax = sfMax
 
   conteudo = JSON.stringify(configInstancia,null," ")+";\n"
 
-  conteudo += JSON.stringify(matrizSNRMinima)+";\n"
+  /*conteudo += JSON.stringify(matrizSNRMinima)+";\n"
 
   conteudo += JSON.stringify(sensibilidades)+";\n"
   
@@ -441,7 +452,7 @@ function criarArquivoInstancia(sfMin,sfMax){
     conteudo += "},\n"
   }
   conteudo = conteudo.substr(0, conteudo.length - 2);
-  conteudo += "\n};"+"\n"
+  conteudo += "\n};"+"\n"*/
 
   conteudo += "["+"\n"
   for (let i = 0; i < structGateways.length; i++) {
@@ -462,10 +473,11 @@ function criarArquivoInstancia(sfMin,sfMax){
   var hiddenElement = document.createElement("a")
   hiddenElement.href = "data:attachment/text," + encodeURI(conteudo)
   hiddenElement.target = "_blank"
-  if(sfMin==sfMax)
+  /*if(sfMin==sfMax)
     hiddenElement.download = "instancia_"+nGateways+"_"+(quantPontos-nGateways)+"_"+sfMax+".txt"
   else
-    hiddenElement.download = "instancia_"+nGateways+"_"+(quantPontos-nGateways)+".txt"
+    hiddenElement.download = "instancia_"+nGateways+"_"+(quantPontos-nGateways)+".txt"*/
+  hiddenElement.download = "instancia_"+nGateways+"_"+nClients+".txt" 
   hiddenElement.click()
     
 
