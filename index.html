@@ -2,53 +2,69 @@
 <html>
   <head>
     <title>Gerador</title>
-    <meta name="viewport" content="initial-scale=1.0">
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-
-      <div class="row m-0">
-        <div class="col-12 text-center">
-          <h1>Gerador de Instâncias</h1>
-        </div>      
+    <div class="row m-0">
+      <div class="col-12 text-center">
+        <h1>Gerador de Instâncias</h1>
       </div>
-  
-      <div class="row m-0 main">
-        
-        <div class="col-5 main">
-          <div class="card h-100">
-            <div class="card-body">
-              <div id="map"></div>
-            </div>
+    </div>
+
+    <div class="row m-0 main">
+      <div class="col-8 main">
+        <div class="card h-100">
+          <div class="card-body">
+            <div id="map"></div>
           </div>
         </div>
-        
-        <div class="col-7 main">
-  
-          <div class="card main">
-            <div class="card-title text-center m-3">
-              <h3>Propriedades da Instância</h3>
-            </div>
-            <div class="card-body overflow">
-              <form>
-            
-                <div class="form-group row">
-                  <label class="col-6 col-form-label">Clientes:</label>
-                  <input id="qtnClients" type="number" value="1000" class="col-6 form-control">
-                </div>
+      </div>
 
-                <div class="form-group row">
-                  <label class="col-6 col-form-label">Gateways:</label>
-                  <input id="qtnGateways" type="number" value="100" class="col-6 form-control">
-                </div>
-      
-                <div class="form-group row">
-                  <label class="col-6 col-form-label">Pontos de Alocação:</label>
-                  <input id="assignPoints" type="number" value="200" class="col-6 form-control">
-                </div>
-<!--
+      <div class="col-4 main">
+        <div class="card main">
+          <div class="card-title text-center m-3">
+            <h3>Propriedades da Instância</h3>
+          </div>
+          <div class="card-body overflow">
+            <form>
+              <div class="form-group row">
+                <label class="col-6 col-form-label">Clientes:</label>
+                <input
+                  id="qtnClients"
+                  type="number"
+                  value="1000"
+                  class="col-6 form-control"
+                />
+              </div>
+
+              <div class="form-group row">
+                <label class="col-6 col-form-label">Gateways:</label>
+                <input
+                  id="qtnGateways"
+                  type="number"
+                  value="100"
+                  class="col-6 form-control"
+                />
+              </div>
+
+              <div class="form-group row">
+                <label class="col-6 col-form-label">Pontos de Alocação:</label>
+                <input
+                  id="assignPoints"
+                  type="number"
+                  value="200"
+                  class="col-6 form-control"
+                />
+              </div>
+              <!--
                 <div class="form-group row">
                   <label class="col-6 col-form-label">Range de SFs:</label>
                   <input id="sfMin" type="number" min="7" max="12" value="7" class="col-2 form-control">
@@ -103,31 +119,72 @@
                     </table>
                   </div>
                 </div>
-              -->
+                -->
 
-                <div class="row">
-                  <div class="col-12 text-center">
-                    <button id="btnCriar" class="btn btn-primary w-50" type="button" onclick="main()">Criar</button>
-                  </div> 
+              <div class="row">
+                <div class="col-12 text-center">
+                  <button
+                    id="btnCriar"
+                    class="btn btn-primary w-50"
+                    type="button"
+                    onclick="main()"
+                  >
+                    Criar
+                  </button>
                 </div>
-                
-              </form>
-
-            </div>
+              </div>
+            </form>
           </div>
-          
-        </div>
 
+          <div class="card-title text-center m-3">
+            <h3>Enviar Resultado</h3>
+          </div>
+          <div class="card-body overflow">
+            <form>
+              <div class="form-group row">
+                <input type="file" id="fileinput" />
+              </div>
+            </form>
+          </div>
+
+          <div class="card-title text-center m-3">
+            <h3>Dados gerais do resultado</h3>
+          </div>
+          <div class="card-body overflow">
+            <p>Menor SNR encontrado: <span id="SNRMinimo"></span></p>
+            <p>Dispositivos ouvidos: <span id="do"></span></p>
+            <p>Dispositivos inoperantes: <span id="di"></span></p>
+            <p>Raio de densidade: <span id="raio"></span> Km</p>
+            <p>Gateways sem dispositivos: <span id="gsd"></span></p>
+          </div>
+
+        </div>
+      </div>
     </div>
-    
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB-9qnj7z9rg6D7qYyi_6G8V3RppSZxAz0&libraries=geometry&callback=initMap" async defer></script>
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB-9qnj7z9rg6D7qYyi_6G8V3RppSZxAz0&libraries=geometry&callback=initMap"
+      async
+      defer
+    ></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-    <script src="https://kit.fontawesome.com/e5ed909ff7.js" crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+      integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://kit.fontawesome.com/e5ed909ff7.js"
+      crossorigin="anonymous"
+    ></script>
 
     <script src="script.js"></script>
-    
+    <script src="resultado.js"></script>
   </body>
 </html>

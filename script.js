@@ -1,28 +1,21 @@
-        
-
 //Inicia o mapa do Google Maps
 function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 14,
-    center: { lat: -21.7642, lng: -43.3496 }
+    center: { lat: -21.7642, lng: -43.3496 },
   });
 }
 //-----------------------------------
 
 function main() {
-
-  
-
   initMap();
-  finalData = []             // Dados do Arquivo JSONBounds.txt
-  quantPontos = 0            // Gateways + Dispositivos
-  nGateways = 0              // Quantidade total de Gateways
-  configInstancia = {}       // Configurações da instancia
-  structGateways = []        // Todos os Gateways e seus atributos
-  structDispositivos = []    // Todos os Dispostitivos e seus atributos
-  quantGateways = 0  
-  infoWindow = new google.maps.InfoWindow({});
+  finalData = []; // Dados do Arquivo JSONBounds.txt
+  configInstancia = {}; // Configurações da instancia
+  structAssignPoints = []; // Todos os Gateways e seus atributos
+  structClients = []; // Todos os Dispostitivos e seus atributos
+
   /*
+  infoWindow = new google.maps.InfoWindow({});
   if(document.getElementById("qtnPts").value < 1000)  
     quantPontos = 1000;
   else 
@@ -42,39 +35,40 @@ function main() {
   var ptc1 = parseInt($("#ptc1").val())
   var ptc2 = parseInt($("#ptc2").val())*/
   //nGateways = Math.round((quantPontos * porcentagemGateway) / 100) //quantidade total de Gateways
-  google.maps.event.trigger(map, 'resize'); //reiniciar o mapa 
+  google.maps.event.trigger(map, "resize"); //reiniciar o mapa
 
-  var sfMin = parseInt($("#sfMin").val())
-  var sfMax = parseInt($("#sfMax").val())
-  nGateways = document.getElementById("qtnGateways").value;
-  nClients =  document.getElementById("qtnClients").value
+  var sfMin = parseInt($("#sfMin").val());
+  var sfMax = parseInt($("#sfMax").val());
+  nGateways = parseInt(document.getElementById("qtnGateways").value);
+  nClients = parseInt(document.getElementById("qtnClients").value);
+  nAssignPoints = parseInt(document.getElementById("assignPoints").value);
 
   configInstancia = {
-    clientes: nClients,
+    clients: nClients,
     gateways: nGateways,
-    assignPoints: document.getElementById("assignPoints").value,
+    assignPoints: nAssignPoints,
     //quantPoints : parseInt(quantPontos),
     //percentGateway: parseInt(porcentagemGateway),
     //totalGateways: nGateways,
-    //gateways: ,   
+    //gateways: ,
     //clients: quantPontos - nGateways,
     //ptc1: ptc1,
     //ptc2: ptc2,
     //dBiGain : parseFloat($("#dbi").val())
-  }
-  
-  $.getJSON("JSONBounds.txt", function(data) {
+  };
+
+  $.getJSON("JSONBounds.txt", function (data) {
     finalData = data;
     finalData[69].coordenadas = bugfix(); //Problema com o bairro de Nossa Senhora de lourdes
 
     //Desenhar poligonos que definem o bairro
-    finalData.forEach(function(item) {
+    finalData.forEach(function (item) {
       var polygon = new google.maps.Polygon({
         path: item.coordenadas,
         strokeColor: "#FF0000",
         strokeOpacity: 0.3,
         strokeWeight: 1,
-        fillOpacity: 0
+        fillOpacity: 0,
       });
       polygon.setMap(map);
     });
@@ -83,82 +77,78 @@ function main() {
     var sumZones = sumPopZone();
     testeDeRandomizacao(sumZones); //TESTE DE RANDOMIZAÇÃO DE ZONAS
     var zona, bairros, point;
-    
-    //Criando Gateways
-    for (let i = 0; i < nGateways; i++) {
-      gateway = {}
+
+    //Criando Assign Points
+    for (let i = 0; i < nAssignPoints; i++) {
+      gateway = {};
       zona = randomZone(sumZones);
       bairros = bairrosZona(zona);
       point = gerarPonto(bairros);
-      gateway.id = i
-      gateway.lat = point.lat()
-      gateway.lng = point.lng()
+      gateway.id = i;
+      gateway.lat = point.lat();
+      gateway.lng = point.lng();
       //gateway.sf = 0
-      structGateways[i] = gateway
-      desenhaPonto(gateway,"Gateway");
+      structAssignPoints[i] = gateway;
+      desenhaPonto(gateway, "Gateway");
     }
     //----
 
     //Criando Dispositivos
-  
+
     for (let i = 0; i < nClients; i++) {
-      dispositivo = {}
+      dispositivo = {};
       zona = randomZone(sumZones);
       bairros = bairrosZona(zona);
       point = gerarPonto(bairros);
-      dispositivo.id = i
-      dispositivo.lat = point.lat()
-      dispositivo.lng = point.lng()
+      dispositivo.id = i;
+      dispositivo.lat = point.lat();
+      dispositivo.lng = point.lng();
       //dispositivo.sf = 0
-      //dispositivo.ptc = sortearPotencia(ptc1,ptc2)  
-      
-      structDispositivos[i] = dispositivo
-      desenhaPonto(dispositivo,"Dispositivo");
+      //dispositivo.ptc = sortearPotencia(ptc1,ptc2)
+
+      structClients[i] = dispositivo;
+      desenhaPonto(dispositivo, "Dispositivo");
     }
-  
+
     /*for (let i = sfMin; i <= sfMax; i++) {
-      sortearEspalhamentoEspectral(structGateways,nGateways,i,i)
-      sortearEspalhamentoEspectral(structDispositivos,quantPontos-nGateways,i,i)
+      sortearEspalhamentoEspectral(structAssignPoints,nGateways,i,i)
+      sortearEspalhamentoEspectral(structClients,quantPontos-nGateways,i,i)
       criarArquivoInstancia(i,i)
     }
-    sortearEspalhamentoEspectral(structGateways,nGateways,sfMin,sfMax)
-    sortearEspalhamentoEspectral(structDispositivos,quantPontos-nGateways,sfMin,sfMax)
+    sortearEspalhamentoEspectral(structAssignPoints,nGateways,sfMin,sfMax)
+    sortearEspalhamentoEspectral(structClients,quantPontos-nGateways,sfMin,sfMax)
     criarArquivoInstancia(sfMin,sfMax)*/
-    criarArquivoInstancia(sfMin,sfMax)
+    criarArquivoInstancia(sfMin, sfMax);
   });
 }
 //-----------------------------------
 
-/** 
+/**
  * A partir do array finalData que, contém todas as informações do JSONBounds.txt,
  * retorna um array com a população total de cada zona e o total da população da cidade
  * @returns array com a população de total de cada zonas
  */
 function sumPopZone() {
   let zones = {
-    total: 0
+    total: 0,
   };
   let keys;
-  finalData.forEach(function(item) {
+  finalData.forEach(function (item) {
     keys = Object.keys(zones);
-    if (keys.includes(item.zona)) 
-      zones[item.zona] += parseInt(item.populacao);
-    else 
-      zones[item.zona] = parseInt(item.populacao);
+    if (keys.includes(item.zona)) zones[item.zona] += parseInt(item.populacao);
+    else zones[item.zona] = parseInt(item.populacao);
 
     zones["total"] += parseInt(item.populacao);
   });
-
 
   return zones;
 }
 //-----------------------------------
 
-
-/** 
+/**
  * Retorna uma zona aleatoria de acordo a densidade demográfica do local,
  * ou seja, uma zona com uma densidade maior será sorteada mais vezes
- * @param sumZones soma da população de todos os bairros por zonas gerado pela função "sumPopZone()" 
+ * @param sumZones soma da população de todos os bairros por zonas gerado pela função "sumPopZone()"
  * @returns retorna o nome da zona escolhida
  */
 function randomZone(sumZones) {
@@ -169,7 +159,7 @@ function randomZone(sumZones) {
   let min = 0;
   let max = values[1];
 
-  for (let i = 1; i< keys.length; i++) {
+  for (let i = 1; i < keys.length; i++) {
     if (nRandom >= min && nRandom <= max) return keys[i];
     min = max + 1;
     max += values[i + 1];
@@ -177,27 +167,26 @@ function randomZone(sumZones) {
 }
 //-----------------------------------
 
-/** 
+/**
  * Retorna um array com todos os bairros da zona informada
  * @param zona nome da zona escolhida
- * @returns retorna um array de bairros 
+ * @returns retorna um array de bairros
  */
 function bairrosZona(zona) {
   let vetBairros = [];
-  for (let i = 0; i< finalData.length; i++) {
+  for (let i = 0; i < finalData.length; i++) {
     if (finalData[i].zona == zona) vetBairros.push(finalData[i]);
   }
   return vetBairros;
 }
 //-----------------------------------
 
-/** 
+/**
  * Define um ponto em um bairro escolhido randomicamente
- * @param bairros array com as fronteiras dos bairros 
- * @returns retorna um ponto 
+ * @param bairros array com as fronteiras dos bairros
+ * @returns retorna um ponto
  */
 function gerarPonto(bairros) {
-  
   //Total de todas as zonas
   let totalpop = 0;
   for (let index = 0; index < bairros.length; index++)
@@ -217,9 +206,8 @@ function gerarPonto(bairros) {
   //----
 
   var polygon = new google.maps.Polygon({
-    path: bairros[i].coordenadas
+    path: bairros[i].coordenadas,
   });
-
 
   var point = randomizarLatLong(polygon);
 
@@ -227,72 +215,76 @@ function gerarPonto(bairros) {
 }
 //-----------------------------------
 
-/** 
+/**
  * Randomiza os valores de longitude e latitude de um ponto criado
  * até que o mesmo esteja dentro do poligono indicado
  * @param polygon poligono que contem os limites do bairro gerado randomicamente pela função "gerarPonto()"
- * @returns retorna um ponto 
+ * @returns retorna um ponto
  */
 function randomizarLatLong(polygon) {
-
   var bounds = new google.maps.LatLngBounds();
-  var ptLat,ptLng;
+  var ptLat, ptLng;
   var point;
-  for (var i=0; i < polygon.getPath().getLength(); i++) 
+  for (var i = 0; i < polygon.getPath().getLength(); i++)
     bounds.extend(polygon.getPath().getAt(i));
-  
+
   var sw = bounds.getSouthWest();
   var ne = bounds.getNorthEast();
 
   while (true) {
     ptLat = Math.random() * (ne.lat() - sw.lat()) + sw.lat();
     ptLng = Math.random() * (ne.lng() - sw.lng()) + sw.lng();
-    point = new google.maps.LatLng(ptLat,ptLng);
-    if (google.maps.geometry.poly.containsLocation(point,polygon)) 
-      break;
+    point = new google.maps.LatLng(ptLat, ptLng);
+    if (google.maps.geometry.poly.containsLocation(point, polygon)) break;
   }
 
   return point;
 }
 //-----------------------------------
 
-/** 
- * Desenha de verde os Gateways os Dispositivos de azul 
+/**
+ * Desenha de verde os Gateways os Dispositivos de azul
  * @param point ponto gerado pela função "gerarPonto()" que segue as configurações de ponto do Google Maps
  * @param op O que deve ser desenhado
- * @returns seta o ponto colorido no mapa 
+ * @returns seta o ponto colorido no mapa
  */
 
-
-function desenhaPonto(point,op){
-
+function desenhaPonto(point, op) {
   var config = {
     strokeOpacity: 0.8,
     strokeWeight: 2,
     fillOpacity: 0.35,
     map: map,
-    center: {lat: point.lat, lng: point.lng},
-    radius: 20
-  }
+    center: { lat: point.lat, lng: point.lng },
+    radius: 20,
+  };
 
-  config.contentString = "<div><p>ID: "+point.id+"</p>"
-                       + "<p>Lat: "+point.lat+"</p>"
-                       + "<p>Lng: "+point.lng+"</p>"
-                       + "<p>SF: "+point.sf+"</p>"
+  config.contentString =
+    "<div><p>ID: " +
+    point.id +
+    "</p>" +
+    "<p>Lat: " +
+    point.lat +
+    "</p>" +
+    "<p>Lng: " +
+    point.lng +
+    "</p>" +
+    "<p>SF: " +
+    point.sf +
+    "</p>";
 
-  if(op == "Gateway"){
-    config.fillColor = "#FF0000"
-    config.strokeColor = "#FF0000"
-    config.contentString += "</div>"
-  }
-  else {
-    config.fillColor = "#0000FF"
-    config.strokeColor = "#0000FF"
-    config.contentString += "<p>dbm:"+point.dbm+"</p></div>"
+  if (op == "Gateway") {
+    config.fillColor = "#FF0000";
+    config.strokeColor = "#FF0000";
+    config.contentString += "</div>";
+  } else {
+    config.fillColor = "#0000FF";
+    config.strokeColor = "#0000FF";
+    config.contentString += "<p>dbm:" + point.dbm + "</p></div>";
   }
 
   var marcador = new google.maps.Circle(config);
-  
+
   /*marcador.addListener("click", function() {
     infoWindow.setContent(this.contentString);
     infoWindow.setPosition(this.getCenter());
@@ -302,32 +294,33 @@ function desenhaPonto(point,op){
 }
 //-----------------------------------
 
-/** 
+/**
  * Verifica se o dispositivo esta no alcance de pelo menos um gateway
  * DESCONTINUADA
- * @param dispositivo 
- * @returns bollean 
+ * @param dispositivo
+ * @returns bollean
  */
-function verificaPonto(dispositivo){
-  var distancia = 0
+function verificaPonto(dispositivo) {
+  var distancia = 0;
 
   for (let index = 0; index < nGateways; index++) {
-    gateway = new google.maps.LatLng(structGateways[index].lat,structGateways[index].lng);
-    dispositivo = new google.maps.LatLng(dispositivo.lat,dispositivo.lng);
+    gateway = new google.maps.LatLng(
+      structAssignPoints[index].lat,
+      structAssignPoints[index].lng
+    );
+    dispositivo = new google.maps.LatLng(dispositivo.lat, dispositivo.lng);
     distancia = google.maps.geometry.spherical.computeDistanceBetween(
       gateway,
       dispositivo
     );
     //if(distancia<=matrizAlcance[dispositivo.dbm][dispositivo.sf])
-      return true;
-    
+    return true;
   }
   return false;
-    
 }
 //-----------------------------------
 
-/** 
+/**
  * Mostra a porcentagem de valores de cada zona
  * Função apenas para verificar se a função de randomização de zonas "randomZone()" corresponde com a porcentagem real
  * @param sumZones array onde cada posição corresponde a soma da população de cada zona
@@ -345,9 +338,8 @@ function testeDeRandomizacao(sumZones) {
   }
 
   for (var key in porcentagem) {
-      console.log(key + ":" + (porcentagem[key] * 100) / 10000);
+    console.log(key + ":" + (porcentagem[key] * 100) / 10000);
   }
-  
 }
 //-----------------------------------
 /** 
@@ -357,43 +349,41 @@ function testeDeRandomizacao(sumZones) {
  * @param sfMin SF maximo 
 
  */
-function sortearEspalhamentoEspectral(array,tamArray,sfMin,sfMax){
-  
-  totalDeSf = {} //Array que ira garantir uma distribuiçao uniforme
-  quantSf = sfMax - sfMin + 1 //Quantidade de SFs diferentes
-  totalDeCadaSf = parseInt(tamArray/quantSf) //Quantidade que cada SF deve ter de Gateways
-  opEscolhaSFs = [] //Opções de escolha de SFs
+function sortearEspalhamentoEspectral(array, tamArray, sfMin, sfMax) {
+  totalDeSf = {}; //Array que ira garantir uma distribuiçao uniforme
+  quantSf = sfMax - sfMin + 1; //Quantidade de SFs diferentes
+  totalDeCadaSf = parseInt(tamArray / quantSf); //Quantidade que cada SF deve ter de Gateways
+  opEscolhaSFs = []; //Opções de escolha de SFs
 
-  for (let r = sfMin; r < sfMax; r++){
-    totalDeSf[r] = totalDeCadaSf
-    opEscolhaSFs.push(r)
-  } 
-
-  totalDeSf[sfMax] = ( tamArray - totalDeCadaSf * (quantSf-1) )
-  opEscolhaSFs.push(sfMax)
-
-  var op;
-  
-  for (let r = 0; r < tamArray; r++) {
-    opEscolhaSFs = shuffle(opEscolhaSFs)
-    op = opEscolhaSFs[0]
-    if(totalDeSf[op]==0){
-      r--
-      opEscolhaSFs.shift() //remove o primeiro valor do vetor
-    }
-    else{
-      totalDeSf[op]--
-      array[r].sf = op
-    }
+  for (let r = sfMin; r < sfMax; r++) {
+    totalDeSf[r] = totalDeCadaSf;
+    opEscolhaSFs.push(r);
   }
 
+  totalDeSf[sfMax] = tamArray - totalDeCadaSf * (quantSf - 1);
+  opEscolhaSFs.push(sfMax);
+
+  var op;
+
+  for (let r = 0; r < tamArray; r++) {
+    opEscolhaSFs = shuffle(opEscolhaSFs);
+    op = opEscolhaSFs[0];
+    if (totalDeSf[op] == 0) {
+      r--;
+      opEscolhaSFs.shift(); //remove o primeiro valor do vetor
+    } else {
+      totalDeSf[op]--;
+      array[r].sf = op;
+    }
+  }
 }
 
 function shuffle(array) {
-  var currentIndex = array.length, temporaryValue, randomIndex;
+  var currentIndex = array.length,
+    temporaryValue,
+    randomIndex;
 
   while (0 !== currentIndex) {
-
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex -= 1;
 
@@ -406,37 +396,36 @@ function shuffle(array) {
 }
 //-----------------------------------
 
-function sortearPotencia(ptc1,ptc2){
+function sortearPotencia(ptc1, ptc2) {
   //Math.floor(Math.random() * (Max + 1 - Min) + Min )
-  op = Math.floor(Math.random() * (2 + 1 - 1) + 1 )
+  op = Math.floor(Math.random() * (2 + 1 - 1) + 1);
 
   switch (op) {
     case 1:
-      return ptc1
-   case 2:
-      return ptc2
+      return ptc1;
+    case 2:
+      return ptc2;
   }
-
 }
 
-/** 
+/**
  * Varre os vetores de coordenadas dos Gateways e Clientes
- * Cria um arquivo que será automáticamente baixado 
+ * Cria um arquivo que será automáticamente baixado
  * @returns arquivo instancia.txt
  * A primeira linha do arquivo contem os dados passados no form (Total de pontos e alcance do dispositivo)
- * As linhas seguintes contem a latitude e longitude de cada 
+ * As linhas seguintes contem a latitude e longitude de cada
  * Gateway (20% do total) e Cliente (80% do total)
- * Gateways: 
+ * Gateways:
  *  latitude, longitude, Espalhamento Espectral
  * Cliente
  *  latitude, longitude, Espalhamento Espectral(10,11,12), Potencia de Transmissao(14,20)
  */
-function criarArquivoInstancia(sfMin,sfMax){
+function criarArquivoInstancia(sfMin, sfMax) {
   var conteudo;
   //configInstancia.sfMin = sfMin
   //configInstancia.sfMax = sfMax
 
-  conteudo = JSON.stringify(configInstancia,null," ")+";\n"
+  conteudo = JSON.stringify(configInstancia, null, " ") + ";\n";
 
   /*conteudo += JSON.stringify(matrizSNRMinima)+";\n"
 
@@ -454,33 +443,29 @@ function criarArquivoInstancia(sfMin,sfMax){
   conteudo = conteudo.substr(0, conteudo.length - 2);
   conteudo += "\n};"+"\n"*/
 
-  conteudo += "["+"\n"
-  for (let i = 0; i < structGateways.length; i++) {
-    if(i!=structGateways.length-1)
-      conteudo += JSON.stringify(structGateways[i]) + "," + "\n"
-    else 
-      conteudo += JSON.stringify(structGateways[i]) + "\n" + "]" + ";\n"
+  conteudo += "[" + "\n";
+  for (let i = 0; i < structAssignPoints.length; i++) {
+    if (i != structAssignPoints.length - 1)
+      conteudo += JSON.stringify(structAssignPoints[i]) + "," + "\n";
+    else conteudo += JSON.stringify(structAssignPoints[i]) + "\n" + "]" + ";\n";
   }
 
-  conteudo += "["+"\n"
-  for (let i = 0; i < structDispositivos.length; i++) {
-    if(i!=structDispositivos.length-1)
-      conteudo += JSON.stringify(structDispositivos[i]) + "," + "\n"
-    else 
-      conteudo += JSON.stringify(structDispositivos[i]) + "\n" + "]" + "\n"
+  conteudo += "[" + "\n";
+  for (let i = 0; i < structClients.length; i++) {
+    if (i != structClients.length - 1)
+      conteudo += JSON.stringify(structClients[i]) + "," + "\n";
+    else conteudo += JSON.stringify(structClients[i]) + "\n" + "]" + "\n";
   }
 
-  var hiddenElement = document.createElement("a")
-  hiddenElement.href = "data:attachment/text," + encodeURI(conteudo)
-  hiddenElement.target = "_blank"
+  var hiddenElement = document.createElement("a");
+  hiddenElement.href = "data:attachment/text," + encodeURI(conteudo);
+  hiddenElement.target = "_blank";
   /*if(sfMin==sfMax)
     hiddenElement.download = "instancia_"+nGateways+"_"+(quantPontos-nGateways)+"_"+sfMax+".txt"
   else
     hiddenElement.download = "instancia_"+nGateways+"_"+(quantPontos-nGateways)+".txt"*/
-  hiddenElement.download = "instancia_"+nGateways+"_"+nClients+".txt" 
-  hiddenElement.click()
-    
-
+  hiddenElement.download = "instancia_" + nGateways + "_" + nClients + ".txt";
+  hiddenElement.click();
 }
 //-----------------------------------
 
@@ -495,12 +480,12 @@ function bugfix() {
   var data = [];
   var grouped = MultiGeometryCoordinates.split(" ");
 
-  grouped.forEach(function(item, i) {
+  grouped.forEach(function (item, i) {
     let a = item.trim().split(",");
 
     data.push({
       lat: parseFloat(a[1]),
-      lng: parseFloat(a[0])
+      lng: parseFloat(a[0]),
     });
   });
 
